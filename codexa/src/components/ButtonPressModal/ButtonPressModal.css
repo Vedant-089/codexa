@@ -1,0 +1,67 @@
+/* Button Press Modal */
+.pages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 15px 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.page-option {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #3f3f3f;
+}
+
+.page-option:hover {
+  background: #3f3f3f;
+  border-color: #4f46e5;
+}
+
+.page-thumbnail {
+  width: 50px;
+  height: 40px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.page-name {
+  font-size: 14px;
+  color: #cfcfcf;
+  flex: 1;
+}
+
+.no-pages {
+  color: #999;
+  text-align: center;
+  padding: 20px 10px;
+  font-size: 13px;
+}
+
+.modal-subtitle {
+  color: #999;
+  font-size: 12px;
+  margin: 5px 0 15px 0;
+}
+
+.modal-cancel {
+  width: 100%;
+  padding: 8px;
+  background: #3a3a3a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.modal-cancel:hover {
+  background: #4a4a4a;
+}

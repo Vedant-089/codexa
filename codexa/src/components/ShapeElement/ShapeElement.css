@@ -1,0 +1,75 @@
+.shape-element {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+.shape-element.selected {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+.button-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}
+
+.button-menu {
+  position: fixed;
+  background: #2b2b2b;
+  border: 1px solid #3f3f3f;
+  border-radius: 6px;
+  padding: 8px 0;
+  min-width: 150px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.button-menu h4 {
+  margin: 0;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  border-bottom: 1px solid #3f3f3f;
+}
+
+.button-menu-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  color: #cfcfcf;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.button-menu-item:hover {
+  background: #3f3f3f;
+  color: white;
+}
+
+.button-menu-item.selected {
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+}
+
+.button-menu-item.selected:hover {
+  background: #5d57e8;
+}
+
+.button-menu-item.disabled {
+  color: #666;
+  cursor: default;
+  font-size: 13px;
+}
+
+.button-menu-item.disabled:hover {
+  background: transparent;
+}
+
