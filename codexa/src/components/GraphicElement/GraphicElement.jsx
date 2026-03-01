@@ -1,32 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import arrowUpSVG from '../../arrows/arrow-up.svg?url'
-import arrowDownSVG from '../../arrows/arrow-down.svg?url'
-import arrowLeftSVG from '../../arrows/arrow-left.svg?url'
-import arrowRightSVG from '../../arrows/arrow-right.svg?url'
-import arrowUpRightSVG from '../../arrows/arrow-up-right.svg?url'
-import arrowDownRightSVG from '../../arrows/arrow-down-right.svg?url'
-import arrowDownLeftSVG from '../../arrows/arrow-down-left.svg?url'
-import arrowUpLeftSVG from '../../arrows/arrow-up-left.svg?url'
 
-const arrowSVGs = {
-  up: arrowUpSVG,
-  down: arrowDownSVG,
-  left: arrowLeftSVG,
-  right: arrowRightSVG,
-  'up-right': arrowUpRightSVG,
-  'down-right': arrowDownRightSVG,
-  'down-left': arrowDownLeftSVG,
-  'up-left': arrowUpLeftSVG,
-}
-
-export function ArrowElement({ element, selected, onSelect, onUpdate, onContextMenu, pages, currentPageIndex, computedAnimationDelay = 0, canvasScale = 1 }) {
+export function GraphicElement({ element, selected, onSelect, onUpdate, onContextMenu, computedAnimationDelay = 0, canvasScale = 1 }) {
   const [mode, setMode] = useState(null)
   const [initial, setInitial] = useState(null)
   const elementRef = useRef(null)
-
-  const getArrowSVGPath = () => {
-    return arrowSVGs[element.arrowType] || arrowUpSVG
-  }
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -104,14 +81,14 @@ export function ArrowElement({ element, selected, onSelect, onUpdate, onContextM
   return (
     <div
       ref={elementRef}
-      className={`arrow-element animation-${element.animation || 'none'} ${delayOnly ? 'animation-delayOnly' : ''}`}
+      className={`graphic-element animation-${element.animation || 'none'} ${delayOnly ? 'animation-delayOnly' : ''}`}
       style={{
         position: 'absolute',
         left: element.x,
         top: element.y,
         width: element.width,
         height: element.height,
-        cursor: 'grab',
+        cursor: selected ? 'move' : 'grab',
         userSelect: 'none',
         ...(hasAnimation && { animationDuration: `${duration}s` }),
         ...(delay > 0 && { animationDelay: `${delay}s` }),
@@ -124,19 +101,22 @@ export function ArrowElement({ element, selected, onSelect, onUpdate, onContextM
         onContextMenu(e)
       }}
     >
-      {/* Arrow SVG image */}
       <img
-        src={getArrowSVGPath()}
-        alt={element.arrowType}
+        src={element.iconPath}
+        alt="Graphic"
         width="100%"
         height="100%"
         style={{
+          objectFit: 'contain',
+          pointerEvents: 'none',
           filter: selected ? 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.5))' : 'none',
-          color: element.fill || '#000000',
+        }}
+        draggable={false}
+        onError={(e) => {
+          e.target.style.display = 'none'
         }}
       />
 
-      {/* Selection border */}
       {selected && (
         <>
           <div
@@ -150,7 +130,6 @@ export function ArrowElement({ element, selected, onSelect, onUpdate, onContextM
               pointerEvents: 'none',
             }}
           />
-          {/* Resize handle */}
           <div
             onMouseDown={handleResizeDown}
             onClick={(e) => e.stopPropagation()}

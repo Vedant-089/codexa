@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-export function ShapeElement({ element, selected, onSelect, onUpdate, onContextMenu, onButtonPress, pages, currentPageIndex }) {
+export function ShapeElement({ element, selected, onSelect, onUpdate, onContextMenu, onButtonPress, pages, currentPageIndex, computedAnimationDelay = 0, canvasScale = 1 }) {
   const [mode, setMode] = useState(null)
   const [resizeHandle, setResizeHandle] = useState(null)
   const [initial, setInitial] = useState(null)
@@ -12,17 +12,17 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
     const handleMouseMove = (e) => {
       if (!mode || !initial) return
 
+      // Adjust deltas by canvas scale
+      const deltaX = (e.clientX - initial.x) / canvasScale
+      const deltaY = (e.clientY - initial.y) / canvasScale
+
       if (mode === 'dragging') {
-        const deltaX = e.clientX - initial.x
-        const deltaY = e.clientY - initial.y
         onUpdate({
           ...element,
           x: initial.elementX + deltaX,
           y: initial.elementY + deltaY,
         })
       } else if (mode === 'resizing') {
-        const deltaX = e.clientX - initial.x
-        const deltaY = e.clientY - initial.y
         let newX = initial.elementX
         let newY = initial.elementY
         let newWidth = Math.max(30, initial.elementWidth + deltaX)
@@ -126,16 +126,13 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
 
       document.addEventListener('mouseup', handleMouseUp, { once: true })
 
-      pressTimer.current = setTimeout(() => {
-        setMode('dragging')
-        setInitial({
-          x: e.clientX,
-          y: e.clientY,
-          elementX: element.x,
-          elementY: element.y,
-        })
-        pressTimer.current = null
-      }, 500)
+      setMode('dragging')
+      setInitial({
+        x: e.clientX,
+        y: e.clientY,
+        elementX: element.x,
+        elementY: element.y,
+      })
     }
   }
 
@@ -143,7 +140,7 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
     const { shapeType, width, height, borderColor, borderWidth, isButton, fillType, fillColors, color } = element
     const bw = borderWidth || 2
     const buttonText = element.text || 'Button'
-    
+
     // Support both old color property and new fillType/fillColors
     const fillColor = fillType === 'gradient' ? `url(#grad-${element.id})` : (fillColors?.[0] || color || '#ffffff')
     const gradientId = `grad-${element.id}`
@@ -177,10 +174,10 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
                 x={width / 2}
                 y={height / 2 + 5}
                 textAnchor="middle"
-                fontSize="12"
-                fill="white"
+                fontSize={element.fontSize || 12}
+                fill={element.textColor || "white"}
                 fontFamily="Arial"
-                fontWeight="500"
+                fontWeight={element.fontWeight || "500"}
                 pointerEvents="none"
               >
                 {buttonText}
@@ -673,9 +670,10 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
               x={width / 2}
               y={height / 2 + 5}
               textAnchor="middle"
-              fontSize="14"
-              fill="white"
+              fontSize={element.fontSize || 14}
+              fill={element.textColor || "white"}
               fontFamily="Arial"
+              fontWeight={element.fontWeight || "500"}
             >
               {buttonText}
             </text>
@@ -686,18 +684,29 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
     }
   }
 
+  const hasAnimation = element.animation && element.animation !== 'none'
+  const duration = element.animationDuration ?? 0.5
+  const delay = computedAnimationDelay ?? 0
+  const delayOnly = delay > 0 && !hasAnimation
+
   return (
     <>
       <div
         ref={elementRef}
-        className={`shape-element ${selected ? 'selected' : ''}`}
+        className={`shape-element ${selected ? 'selected' : ''} animation-${element.animation || 'none'} ${delayOnly ? 'animation-delayOnly' : ''}`}
         style={{
           position: 'absolute',
           left: element.x,
           top: element.y,
           width: element.width,
           height: element.height,
+          opacity: element.opacity ?? 1,
+          boxShadow: element.boxShadow || 'none',
+          backdropFilter: element.backdropFilter || 'none',
+          borderRadius: element.borderRadius || (element.shapeType === 'pill' ? element.height / 2 : 0),
           cursor: selected ? 'move' : 'default',
+          ...(hasAnimation && { animationDuration: `${duration}s` }),
+          ...(delay > 0 && { animationDelay: `${delay}s` }),
         }}
         onMouseDown={(e) => handleMouseDown(e)}
         onClick={(e) => e.stopPropagation()}
@@ -739,16 +748,16 @@ export function ShapeElement({ element, selected, onSelect, onUpdate, onContextM
 
       {buttonMenu && (
         <>
-          <div 
+          <div
             className="button-menu-overlay"
             onClick={() => setButtonMenu(null)}
             style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999 }}
           />
-          <div 
+          <div
             className="button-menu"
-            style={{ 
-              position: 'fixed', 
-              top: buttonMenu.y, 
+            style={{
+              position: 'fixed',
+              top: buttonMenu.y,
               left: buttonMenu.x,
               zIndex: 1000
             }}

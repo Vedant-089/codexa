@@ -13,7 +13,6 @@ export function PageThumbs({ pages, activeIndex, onPageSelect, onShowNameModal, 
           <div
             key={page.id}
             className={`page-thumb ${index === activeIndex ? 'active' : ''}`}
-            style={style}
             title={page.name}
             onClick={(e) => {
               e.stopPropagation()
@@ -28,7 +27,9 @@ export function PageThumbs({ pages, activeIndex, onPageSelect, onShowNameModal, 
                 index,
               })
             }}
-          />
+          >
+            {page.name}
+          </div>
         )
       })}
 

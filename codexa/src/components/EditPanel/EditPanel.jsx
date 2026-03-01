@@ -1,38 +1,100 @@
-export function EditPanel({ editPanel, activePage, onUpdateProperty, onClose }) {
-  if (!editPanel.isOpen) return null
+import { useState } from 'react'
+import { Type, Palette, Layout, MousePointer2, Zap, Settings } from 'lucide-react'
+import './EditPanel.css'
+
+// Animation options
+const ANIMATION_OPTIONS = [
+  { value: 'none', label: 'None' },
+  { value: 'fadeIn', label: 'Fade In' },
+  { value: 'fadeInUp', label: 'Fade In Up' },
+  { value: 'fadeInDown', label: 'Fade In Down' },
+  { value: 'slideInLeft', label: 'Slide In Left' },
+  { value: 'slideInRight', label: 'Slide In Right' },
+  { value: 'slideInTop', label: 'Slide In Top' },
+  { value: 'slideInBottom', label: 'Slide In Bottom' },
+  { value: 'zoomIn', label: 'Zoom In' },
+  { value: 'zoomOut', label: 'Zoom Out' },
+  { value: 'bounce', label: 'Bounce' },
+  { value: 'bounceIn', label: 'Bounce In' },
+  { value: 'flipInX', label: 'Flip In X' },
+  { value: 'flipInY', label: 'Flip In Y' },
+  { value: 'rotateIn', label: 'Rotate In' },
+  { value: 'rollIn', label: 'Roll In' },
+  { value: 'pulse', label: 'Pulse' },
+  { value: 'swing', label: 'Swing' },
+  { value: 'wobble', label: 'Wobble' },
+  { value: 'shake', label: 'Shake' },
+  { value: 'spin', label: 'Spin' },
+  { value: 'rubberBand', label: 'Rubber Band' },
+  { value: 'tada', label: 'Tada' },
+  { value: 'elastic', label: 'Elastic' },
+  { value: 'float', label: 'Float' },
+]
+
+export function EditPanel({ editPanel, activePage, onUpdateProperty, onClose, inline }) {
+  const [activeSubsection, setActiveSubsection] = useState('standard')
+
+  if (!editPanel.isOpen && !inline) return null
 
   const element = activePage.elements.find(e => e.id === editPanel.elementId)
   if (!element) return null
 
   const isShape = element.type === 'shape'
   const isButton = element.isButton
+  const isText = element.type === 'text'
+
+  const elementLabel = isButton ? 'Button' : (isShape ? 'Shape' : element.type === 'graphic' ? 'Graphic' : element.type === 'arrow' ? 'Arrow' : 'Text')
 
   return (
-    <div className="edit-panel" onClick={(e) => e.stopPropagation()}>
-      <div className="edit-header">
-        <h3>{isButton ? 'Edit Button' : (isShape ? 'Edit Shape' : 'Edit Text')}</h3>
-        <button onClick={onClose}>×</button>
+    <div className={`edit-panel-content ${inline ? 'inline' : ''}`} onClick={(e) => e.stopPropagation()}>
+      {/* Sub-section chooser: Standard | Advanced */}
+      <div className="subsection-chooser">
+        <button
+          type="button"
+          className={`subsection-tab ${activeSubsection === 'standard' ? 'active' : ''}`}
+          onClick={() => setActiveSubsection('standard')}
+        >
+          <Settings size={14} />
+          <span>Standard</span>
+        </button>
+        <button
+          type="button"
+          className={`subsection-tab ${activeSubsection === 'advanced' ? 'active' : ''}`}
+          onClick={() => setActiveSubsection('advanced')}
+        >
+          <Settings size={14} />
+          <span>Advanced</span>
+        </button>
       </div>
 
-      {!isShape && (
-        <>
-          <div className="edit-section">
-            <h4>Text</h4>
+      {activeSubsection === 'standard' && (
+      <div className="subsection-body subsection-standard-body">
+          <div className="property-group-header">
+            <span className="group-title">{elementLabel} Properties</span>
+          </div>
+
+      {isText && (
+        <div className="property-section">
+          <div className="section-label"><Type size={14} /> Typography</div>
+
+          <div className="property-row">
             <textarea
+              className="property-input textarea"
               value={element.content || ''}
               onChange={(e) => onUpdateProperty(editPanel.elementId, 'content', e.target.value)}
-              placeholder="Edit text"
+              placeholder="Enter text..."
               rows={3}
-              style={{ width: '100%', padding: '6px' }}
             />
           </div>
-          <div className="edit-section">
-            <h4>Fonts</h4>
+
+          <div className="property-row">
             <select
+              className="property-input"
               value={element.fontFamily || 'Arial'}
               onChange={(e) => onUpdateProperty(editPanel.elementId, 'fontFamily', e.target.value)}
             >
               <option value="Arial">Arial</option>
+              <option value="Inter">Inter</option>
               <option value="Helvetica">Helvetica</option>
               <option value="Times New Roman">Times New Roman</option>
               <option value="Courier New">Courier New</option>
@@ -40,121 +102,125 @@ export function EditPanel({ editPanel, activePage, onUpdateProperty, onClose }) 
               <option value="Verdana">Verdana</option>
             </select>
           </div>
-          <div className="edit-section">
-            <h4>Size</h4>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              value={element.fontSize || 14}
-              onChange={(e) => onUpdateProperty(editPanel.elementId, 'fontSize', parseInt(e.target.value))}
-            />
-            <span>{element.fontSize || 14}px</span>
+
+          <div className="property-row">
+            <label className="row-label">Size</label>
+            <div className="range-wrapper">
+              <input
+                type="range"
+                min="10"
+                max="200"
+                value={element.fontSize || 14}
+                onChange={(e) => onUpdateProperty(editPanel.elementId, 'fontSize', parseInt(e.target.value))}
+              />
+              <span className="value-display">{element.fontSize || 14}px</span>
+            </div>
           </div>
-        </>
+
+          <div className="property-row">
+            <label className="row-label">Color</label>
+            <div className="color-picker-wrapper">
+              <input
+                type="color"
+                value={element.color || '#000000'}
+                onChange={(e) => onUpdateProperty(editPanel.elementId, 'color', e.target.value)}
+              />
+              <span className="color-value">{element.color || '#000000'}</span>
+            </div>
+          </div>
+        </div>
       )}
 
       {isButton && (
-        <>
-          <div className="edit-section">
-            <h4>Button Text</h4>
+        <div className="property-section">
+          <div className="section-label"><MousePointer2 size={14} /> Interaction</div>
+
+          <div className="property-row">
+            <label className="row-label">Label</label>
             <input
               type="text"
+              className="property-input"
               value={element.text || 'Button'}
               onChange={(e) => onUpdateProperty(editPanel.elementId, 'text', e.target.value)}
-              placeholder="Button text"
+              placeholder="Button label"
             />
           </div>
 
-          <div className="edit-section">
-            <h4>Button Type</h4>
+          <div className="property-row">
+            <label className="row-label">Type</label>
             <select
+              className="property-input"
               value={element.buttonType || 'press'}
               onChange={(e) => onUpdateProperty(editPanel.elementId, 'buttonType', e.target.value)}
-              style={{ width: '100%', padding: '6px' }}
             >
-              <option value="press">Press Button</option>
-              <option value="text-input">Text Input Button</option>
+              <option value="press">Clickable</option>
+              <option value="text-input">Input Field</option>
             </select>
           </div>
 
           {((element.buttonType) || 'press') === 'text-input' && (
             <>
-              <div className="edit-section">
-                <h4>Input Placeholder</h4>
+              <div className="property-row">
+                <label className="row-label">Placeholder</label>
                 <input
                   type="text"
+                  className="property-input"
                   value={element.inputPlaceholder || ''}
                   onChange={(e) => onUpdateProperty(editPanel.elementId, 'inputPlaceholder', e.target.value)}
-                  placeholder="Placeholder text"
+                  placeholder="Placeholder..."
                 />
               </div>
-              <div className="edit-section">
-                <h4>Fix Text</h4>
-                <div style={{ marginBottom: '10px' }}>
-                  <label style={{ marginRight: '10px' }}>
-                    <input
-                      type="radio"
-                      name="fixedText"
-                      value="true"
-                      checked={element.fixedText === true}
-                      onChange={() => onUpdateProperty(editPanel.elementId, 'fixedText', true)}
-                    />
-                    Yes
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="fixedText"
-                      value="false"
-                      checked={element.fixedText === false}
-                      onChange={() => onUpdateProperty(editPanel.elementId, 'fixedText', false)}
-                    />
-                    No
-                  </label>
-                </div>
+
+              <div className="property-row checkbox-row">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={element.fixedText === true}
+                    onChange={(e) => onUpdateProperty(editPanel.elementId, 'fixedText', e.target.checked)}
+                  />
+                  Uneditable Text
+                </label>
               </div>
             </>
           )}
-        </>
+        </div>
       )}
 
-      <div className="edit-section">
-        <h4>Fill Colour</h4>
-        {isShape && (
-          <>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ marginRight: '10px' }}>
-                <input
-                  type="radio"
-                  name="fillType"
-                  value="solid"
-                  checked={element.fillType === 'solid'}
-                  onChange={(e) => onUpdateProperty(editPanel.elementId, 'fillType', 'solid')}
-                />
-                Solid
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="fillType"
-                  value="gradient"
-                  checked={element.fillType === 'gradient'}
-                  onChange={(e) => onUpdateProperty(editPanel.elementId, 'fillType', 'gradient')}
-                />
-                Gradient
-              </label>
+      {(isShape || isButton) && (
+        <div className="property-section">
+          <div className="section-label"><Palette size={14} /> Appearance</div>
+
+          <div className="property-row">
+            <label className="row-label">Fill Style</label>
+            <div className="segment-control">
+              <button
+                className={element.fillType === 'solid' ? 'active' : ''}
+                onClick={() => onUpdateProperty(editPanel.elementId, 'fillType', 'solid')}
+              >Solid</button>
+              <button
+                className={element.fillType === 'gradient' ? 'active' : ''}
+                onClick={() => onUpdateProperty(editPanel.elementId, 'fillType', 'gradient')}
+              >Gradient</button>
             </div>
-            {element.fillType === 'solid' ? (
-              <input
-                type="color"
-                value={element.fillColors?.[0] || '#ffffff'}
-                onChange={(e) => onUpdateProperty(editPanel.elementId, 'fillColors', [e.target.value])}
-              />
-            ) : (
-              <>
-                <div style={{ marginBottom: '8px' }}>
-                  <label style={{ fontSize: '12px', color: '#999' }}>Color 1</label>
+          </div>
+
+          {element.fillType === 'solid' ? (
+            <div className="property-row">
+              <label className="row-label">Fill Color</label>
+              <div className="color-picker-wrapper">
+                <input
+                  type="color"
+                  value={element.fillColors?.[0] || '#ffffff'}
+                  onChange={(e) => onUpdateProperty(editPanel.elementId, 'fillColors', [e.target.value])}
+                />
+                <span className="color-value">{element.fillColors?.[0] || '#ffffff'}</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="property-row">
+                <label className="row-label">Start Color</label>
+                <div className="color-picker-wrapper">
                   <input
                     type="color"
                     value={element.fillColors?.[0] || '#ffffff'}
@@ -165,8 +231,10 @@ export function EditPanel({ editPanel, activePage, onUpdateProperty, onClose }) 
                     }}
                   />
                 </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#999' }}>Color 2</label>
+              </div>
+              <div className="property-row">
+                <label className="row-label">End Color</label>
+                <div className="color-picker-wrapper">
                   <input
                     type="color"
                     value={element.fillColors?.[1] || '#ffffff'}
@@ -177,41 +245,173 @@ export function EditPanel({ editPanel, activePage, onUpdateProperty, onClose }) 
                     }}
                   />
                 </div>
-              </>
-            )}
-          </>
-        )}
-        {!isShape && (
-          <input
-            type="color"
-            value={element.color || '#000000'}
-            onChange={(e) => onUpdateProperty(editPanel.elementId, 'color', e.target.value)}
-          />
-        )}
+              </div>
+            </>
+          )}
+
+          <div className="property-row">
+            <label className="row-label">Border</label>
+            <div className="color-picker-wrapper">
+              <input
+                type="color"
+                value={element.borderColor || '#000000'}
+                onChange={(e) => onUpdateProperty(editPanel.elementId, 'borderColor', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="property-row">
+            <label className="row-label">Thickness</label>
+            <div className="range-wrapper">
+              <input
+                type="range"
+                min="0"
+                max="20"
+                value={element.borderWidth || 0}
+                onChange={(e) => onUpdateProperty(editPanel.elementId, 'borderWidth', parseInt(e.target.value))}
+              />
+              <span className="value-display">{element.borderWidth || 0}px</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="property-section">
+        <div className="section-label"><Layout size={14} /> Layout</div>
+        <div className="grid-2-col">
+          <div className="property-col">
+            <label>X</label>
+            <input
+              type="number"
+              className="number-input"
+              value={Math.round(element.x)}
+              onChange={(e) => onUpdateProperty(editPanel.elementId, 'x', parseInt(e.target.value))}
+            />
+          </div>
+          <div className="property-col">
+            <label>Y</label>
+            <input
+              type="number"
+              className="number-input"
+              value={Math.round(element.y)}
+              onChange={(e) => onUpdateProperty(editPanel.elementId, 'y', parseInt(e.target.value))}
+            />
+          </div>
+          <div className="property-col">
+            <label>W</label>
+            <input
+              type="number"
+              className="number-input"
+              value={Math.round(element.width)}
+              onChange={(e) => onUpdateProperty(editPanel.elementId, 'width', parseInt(e.target.value))}
+            />
+          </div>
+          <div className="property-col">
+            <label>H</label>
+            <input
+              type="number"
+              className="number-input"
+              value={Math.round(element.height)}
+              onChange={(e) => onUpdateProperty(editPanel.elementId, 'height', parseInt(e.target.value))}
+            />
+          </div>
+        </div>
       </div>
 
-      {isShape && (
-        <>
-          <div className="edit-section">
-            <h4>Border Colour</h4>
-            <input
-              type="color"
-              value={element.borderColor || '#000000'}
-              onChange={(e) => onUpdateProperty(editPanel.elementId, 'borderColor', e.target.value)}
-            />
+      <div className="property-section">
+        <div className="animation-section-header">
+          <div className="section-label"><Zap size={14} /> Animation</div>
+          {(element.animation || 'none') !== 'none' && (
+            <div className="animation-duration-control">
+              <input
+                type="number"
+                min={0.1}
+                max={5}
+                step={0.1}
+                list="duration-presets"
+                className="animation-duration-input"
+                value={element.animationDuration ?? 0.5}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value)
+                  if (Number.isFinite(v)) {
+                    const clamped = Math.min(5, Math.max(0.1, v))
+                    onUpdateProperty(editPanel.elementId, 'animationDuration', clamped)
+                  }
+                }}
+              />
+              <span className="animation-duration-unit">s</span>
+              <datalist id="duration-presets">
+                {[0.3, 0.5, 0.75, 1, 1.5, 2].map((n) => (
+                  <option key={n} value={n} />
+                ))}
+              </datalist>
+            </div>
+          )}
+        </div>
+        <div className="animation-options">
+          {ANIMATION_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              className={`animation-option ${(element.animation || 'none') === option.value ? 'active' : ''}`}
+              onClick={() => onUpdateProperty(editPanel.elementId, 'animation', option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      </div>
+      )}
+
+      {activeSubsection === 'advanced' && (
+        <div className="subsection-body subsection-advanced-body">
+          <div className="advanced-section">
+            <div className="section-label">Animation delay</div>
+            <div className="property-row">
+              <label className="row-label">Delay (seconds)</label>
+              <input
+                type="number"
+                min={0}
+                max={30}
+                step={0.5}
+                className="property-input advanced-delay-input"
+                value={element.animationDelay ?? 0}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value)
+                  if (Number.isFinite(v) && v >= 0) {
+                    const clamped = Math.min(30, Math.max(0, v))
+                    onUpdateProperty(editPanel.elementId, 'animationDelay', clamped)
+                  }
+                }}
+              />
+            </div>
+            {(element.animationDelay ?? 0) > 0 && (
+              <div className="property-row">
+                <label className="row-label">Start after</label>
+                <select
+                  className="property-input"
+                  value={element.animationDelayAfter ?? 'screen'}
+                  onChange={(e) => onUpdateProperty(editPanel.elementId, 'animationDelayAfter', e.target.value === 'screen' ? 'screen' : e.target.value)}
+                >
+                  <option value="screen">Screen</option>
+                  {(() => {
+                    const others = activePage.elements.filter((e) => e.id !== editPanel.elementId)
+                    return others.map((el) => {
+                      const typeLabel = el.type === 'text' ? 'Text' : el.type === 'shape' ? (el.isButton ? 'Button' : 'Shape') : el.type === 'arrow' ? 'Arrow' : 'Graphic'
+                      const sameType = others.filter((e) => e.type === el.type && (el.type !== 'shape' || !!e.isButton === !!e.isButton))
+                      const order = sameType.indexOf(el) + 1
+                      return (
+                        <option key={el.id} value={el.id}>
+                          {typeLabel} {order}
+                        </option>
+                      )
+                    })
+                  })()}
+                </select>
+              </div>
+            )}
           </div>
-          <div className="edit-section">
-            <h4>Border Width</h4>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={element.borderWidth || 2}
-              onChange={(e) => onUpdateProperty(editPanel.elementId, 'borderWidth', parseInt(e.target.value))}
-            />
-            <span>{element.borderWidth || 2}px</span>
-          </div>
-        </>
+        </div>
       )}
     </div>
   )

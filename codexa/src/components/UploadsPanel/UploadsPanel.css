@@ -1,0 +1,91 @@
+.uploads-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: var(--text-primary);
+}
+
+.uploads-panel.inline {
+    padding: 0 !important;
+}
+
+.panel-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.upload-actions {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.upload-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--primary);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.upload-pill:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.uploads-gallery {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.empty-uploads {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.uploaded-image-item {
+    aspect-ratio: 1;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.uploaded-image-item:hover {
+    transform: scale(1.05);
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.uploaded-image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

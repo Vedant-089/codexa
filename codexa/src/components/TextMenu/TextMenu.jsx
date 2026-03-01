@@ -1,8 +1,8 @@
-export function TextMenu({ textMenuOpen, onAddTextElement }) {
-  if (!textMenuOpen) return null
+export function TextMenu({ textMenuOpen, onAddTextElement, inline = false }) {
+  if (!textMenuOpen && !inline) return null
 
   return (
-    <div className="text-menu" onClick={(e) => e.stopPropagation()}>
+    <div className={`text-menu ${inline ? 'inline' : ''}`} onClick={(e) => e.stopPropagation()}>
       <div className="text-option heading" onClick={() => onAddTextElement('heading')}>
         Heading
       </div>

@@ -11,6 +11,14 @@ import shapesImage from '../../UI/shapes.png'
 import buttonsImage from '../../UI/button.png'
 import graphicsImage from '../../UI/graphics.png'
 
+// Load all app icon SVGs so paths resolve correctly (Vite bundles them)
+const graphicModules = import.meta.glob('../../graphics/App Icons/*.svg', { eager: true, as: 'url' })
+const graphicUrlMap = {}
+Object.entries(graphicModules).forEach(([path, url]) => {
+  const filename = path.replace(/^.*\//, '')
+  graphicUrlMap[filename] = url
+})
+
 const arrowSVGs = {
   up: arrowUpSVG,
   down: arrowDownSVG,
@@ -22,12 +30,14 @@ const arrowSVGs = {
   'up-left': arrowUpLeftSVG,
 }
 
-export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onAddGraphic, onClose }) {
+export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onAddGraphic, onClose, inline = false }) {
   const [expandedSections, setExpandedSections] = useState({
     shapes: false,
     buttons: false,
     graphics: false,
   })
+
+  // ... (useState expandedCategories remains same)
 
   const [expandedCategories, setExpandedCategories] = useState({
     shapes: false,
@@ -51,6 +61,8 @@ export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onA
   }
 
   if (!isOpen) return null
+
+  // ... (lists remain same)
 
   const shapes = [
     { name: 'Circle', icon: '●', type: 'circle' },
@@ -143,8 +155,8 @@ export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onA
 
   return (
     <>
-      <div className="elements-panel-overlay" onClick={onClose} />
-      <div className="elements-panel" onClick={(e) => e.stopPropagation()}>
+      {!inline && <div className="elements-panel-overlay" onClick={onClose} />}
+      <div className={`elements-panel ${inline ? 'inline' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="panel-header">
           <h3>Elements</h3>
           <button onClick={onClose}>×</button>
@@ -184,7 +196,7 @@ export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onA
             <div className="subsection-container">
               <div className="subsection-header-with-button">
                 <h4>Shapes</h4>
-                <button 
+                <button
                   className="go-to-btn"
                   onClick={() => toggleCategory('shapes')}
                 >
@@ -213,7 +225,7 @@ export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onA
             <div className="subsection-container">
               <div className="subsection-header-with-button">
                 <h5>Arrows</h5>
-                <button 
+                <button
                   className="go-to-btn"
                   onClick={() => toggleCategory('arrows')}
                 >
@@ -289,22 +301,32 @@ export function ElementsPanel({ isOpen, onAddShape, onAddButton, onAddArrow, onA
                 </button>
               </div>
               <div className={`shape-grid ${expandedCategories.appIcons ? 'expanded' : ''}`}>
-                {(expandedCategories.appIcons ? appIcons : appIcons.slice(0, 3)).map(icon => (
-                  <div
-                    key={`icon-${icon.type}`}
-                    className="shape-grid-item"
-                    onClick={() => {
-                      onAddGraphic(`../graphics/App Icons/${icon.icon}`)
-                      onClose()
-                    }}
-                    title={icon.name}
-                  >
-                    <span className="icon-grid-icon">
-                      <img src={`../graphics/App Icons/${icon.icon}`} alt={icon.name} width="32" height="32" />
-                    </span>
-                    <span className="shape-grid-name">{icon.name}</span>
-                  </div>
-                ))}
+                {(expandedCategories.appIcons ? appIcons : appIcons.slice(0, 3)).map(icon => {
+                  const iconFile = (icon.icon || '').replace(/\?url$/, '')
+                  const iconUrl = graphicUrlMap[iconFile]
+                  return (
+                    <div
+                      key={`icon-${icon.type}`}
+                      className="shape-grid-item"
+                      onClick={() => {
+                        if (iconUrl) {
+                          onAddGraphic(iconUrl)
+                          onClose()
+                        }
+                      }}
+                      title={icon.name}
+                    >
+                      <span className="icon-grid-icon">
+                        {iconUrl ? (
+                          <img src={iconUrl} alt={icon.name} width="32" height="32" />
+                        ) : (
+                          <span className="icon-placeholder">{icon.name}</span>
+                        )}
+                      </span>
+                      <span className="shape-grid-name">{icon.name}</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>

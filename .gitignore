@@ -1,3 +1,10 @@
+# Environment variables
+.env
+**/.env
+.env.local
+.env.*
+.vscode/ 
+.aether_backups/
 # Logs
 logs
 *.log

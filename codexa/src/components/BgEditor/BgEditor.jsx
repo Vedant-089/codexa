@@ -1,10 +1,10 @@
-export function BgEditor({ bgEditor, activePage, onUpdateBg, onClose }) {
-  if (!bgEditor) return null
+export function BgEditor({ bgEditor, activePage, onUpdateBg, onClose, inline = false }) {
+  if (!bgEditor && !inline) return null
 
   return (
     <div
-      className="bg-editor"
-      style={{ top: bgEditor.y, left: bgEditor.x }}
+      className={`bg-editor ${inline ? 'inline' : ''}`}
+      style={inline ? {} : { top: bgEditor?.y, left: bgEditor?.x }}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="toggle">

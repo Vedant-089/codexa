@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-export function TextElement({ element, selected, onSelect, onUpdate, onContextMenu }) {
+export function TextElement({ element, selected, onSelect, onUpdate, onContextMenu, computedAnimationDelay = 0, canvasScale = 1 }) {
   const [mode, setMode] = useState(null) // 'dragging' or 'resizing'
   const [resizeHandle, setResizeHandle] = useState(null) // handle type: 'tl', 'tr', 'bl', 'br', 't', 'b', 'l', 'r'
   const [initial, setInitial] = useState(null)
@@ -11,17 +11,17 @@ export function TextElement({ element, selected, onSelect, onUpdate, onContextMe
     const handleMouseMove = (e) => {
       if (!mode || !initial) return
 
+      // Adjust deltas by canvas scale
+      const deltaX = (e.clientX - initial.x) / canvasScale
+      const deltaY = (e.clientY - initial.y) / canvasScale
+
       if (mode === 'dragging') {
-        const deltaX = e.clientX - initial.x
-        const deltaY = e.clientY - initial.y
         onUpdate({
           ...element,
           x: initial.elementX + deltaX,
           y: initial.elementY + deltaY,
         })
       } else if (mode === 'resizing') {
-        const deltaX = e.clientX - initial.x
-        const deltaY = e.clientY - initial.y
         let newX = initial.elementX
         let newY = initial.elementY
         let newWidth = initial.elementWidth
@@ -89,7 +89,7 @@ export function TextElement({ element, selected, onSelect, onUpdate, onContextMe
   const handleMouseDown = (e, isHandle = false, handleType = null) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     // Clear any pending timers
     if (pressTimer.current) {
       clearTimeout(pressTimer.current)
@@ -119,27 +119,28 @@ export function TextElement({ element, selected, onSelect, onUpdate, onContextMe
         }
         document.removeEventListener('mouseup', handleMouseUp)
       }
-      
+
       document.addEventListener('mouseup', handleMouseUp, { once: true })
 
-      // Start long-press timer for dragging
-      pressTimer.current = setTimeout(() => {
-        setMode('dragging')
-        setInitial({
-          x: e.clientX,
-          y: e.clientY,
-          elementX: element.x,
-          elementY: element.y,
-        })
-        pressTimer.current = null
-      }, 500)
+      setMode('dragging')
+      setInitial({
+        x: e.clientX,
+        y: e.clientY,
+        elementX: element.x,
+        elementY: element.y,
+      })
     }
   }
+
+  const hasAnimation = element.animation && element.animation !== 'none'
+  const duration = element.animationDuration ?? 0.5
+  const delay = computedAnimationDelay ?? 0
+  const delayOnly = delay > 0 && !hasAnimation
 
   return (
     <div
       ref={elementRef}
-      className={`text-element ${selected ? 'selected' : ''}`}
+      className={`text-element ${selected ? 'selected' : ''} animation-${element.animation || 'none'} ${delayOnly ? 'animation-delayOnly' : ''}`}
       style={{
         position: 'absolute',
         left: element.x,
@@ -147,9 +148,22 @@ export function TextElement({ element, selected, onSelect, onUpdate, onContextMe
         width: element.width,
         height: element.height,
         fontSize: element.fontSize,
-        fontFamily: element.fontFamily,
+        fontFamily: element.fontFamily || 'var(--font-sans)',
         color: element.color,
+        fontWeight: element.fontWeight || 'normal',
+        letterSpacing: element.letterSpacing || 'normal',
+        lineHeight: element.lineHeight || '1.2',
+        textTransform: element.textTransform || 'none',
+        textShadow: element.textShadow || 'none',
+        opacity: element.opacity ?? 1,
+        backdropFilter: element.backdropFilter || 'none',
+        textAlign: element.textAlign || 'left',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: element.textAlign === 'center' ? 'center' : (element.textAlign === 'right' ? 'flex-end' : 'flex-start'),
         cursor: selected ? 'move' : 'default',
+        ...(hasAnimation && { animationDuration: `${duration}s` }),
+        ...(delay > 0 && { animationDelay: `${delay}s` }),
       }}
       onMouseDown={(e) => handleMouseDown(e)}
       onClick={(e) => e.stopPropagation()}
